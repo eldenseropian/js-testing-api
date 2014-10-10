@@ -1,3 +1,35 @@
+var TRANSLATIONS = {
+    'for': 'ForStatement',
+    'if': 'IfStatement',
+    'break': 'BreakStatement',
+    'continue': 'ContinueStatement',
+    'return': 'ReturnStatement',
+    'function': 'FunctionDeclaration'
+};
+
+/**
+ * Convience method to allow shorthands instead of official parse statement
+ *     names. If the provided name is a shorthand, returns the official version;
+ *     otherwise returns the provided name. Note that all official names,
+ *     regardless of whether they have shorthand available, will work as
+ *     arguments to shouldHave, shouldNotHave, and shouldBeLike.
+ * @param  {string} shorthand The name is get the official version of.
+ * @return {string} The official version, or shorthand if it is not actually
+ *     short for anything.
+ */
+function shorthandToOfficialName(shorthand) {
+    if (TRANSLATIONS[shorthand] !== undefined) {
+        return TRANSLATIONS[shorthand];
+    }
+    return shorthand;
+}
+
+function hasElse(AST) {
+    return acorn.walk.findNodeAt(AST, null, null, function(nodeType, node) {
+        return (nodeType === 'IfStatement' && node.alternate !== null);
+    }) !== undefined;
+}
+
 /**
  * Check whether code contains whitelisted functionality.
  * For example, the ability to say "This program MUST use a 'for loop' and a
@@ -10,8 +42,20 @@
  * @return {boolean} Whether the provided code has the desired functionality.
  */
 function shouldHave(code, whitelist) {
-    acorn.parse(code);
-    // throw new Error('Not implemented yet');
+    var AST = acorn.parse(code);
+
+    for (var i = 0; i < whitelist.length; i++) {
+        var eltToFind = shorthandToOfficialName(whitelist[i]);
+        if (eltToFind === 'else') {
+            if(!hasElse(AST)) {
+                return false;
+            }
+        } else if (!acorn.walk.findNodeAt(AST, null, null, eltToFind)) {
+            return false;
+        }
+    }
+        
+    return true;
 }
 
 /**

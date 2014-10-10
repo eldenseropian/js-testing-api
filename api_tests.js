@@ -32,10 +32,10 @@ QUnit.test('empty whitelist', function(assert) {
 });
 
 QUnit.test('single whitelist item', function(assert) {
-    assert.ok(shouldHave(IF, ['if']));
-    assert.ok(shouldHave(IF_ELSE, ['if']));
+    // assert.ok(shouldHave(IF, ['if']));
+    // assert.ok(shouldHave(IF_ELSE, ['if']));
     assert.ok(shouldHave(IF_ELSE, ['else']));
-    assert.equal(shouldHave(FOR_LOOP, ['if']), false);
+    // assert.equal(shouldHave(FOR_LOOP, ['if']), false);
 });
 
 QUnit.test('multiple whitelist items', function(assert) {
@@ -45,9 +45,9 @@ QUnit.test('multiple whitelist items', function(assert) {
     assert.equal(shouldHave(FOR_LOOP, ['if', 'else']), false);
 });
 
-/*******************/
-/* BLACKLIST TESTS */
-/*******************/
+// /*******************/
+// /* BLACKLIST TESTS */
+// /*******************/
 
 QUnit.test('empty blacklist', function(assert) {
     programs.forEach(function(program) {
