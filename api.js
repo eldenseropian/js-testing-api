@@ -35,15 +35,18 @@ function shouldNotHave(code, blacklist) {
  *     not check distance between desired structures (i.e. supports
  *     is-ancestor-of but not is-parent-of).
  * @param {string} code The code to check.
- * @param {Object} structure An object represented the desired structure.
+ * @param {Object|string} structure An object represented the desired structure.
  *     Example: {'for': 'if'} checks if there is a 'for loop' that has an
  *         'if' statement somewhere inside it, possible within another
  *         construct. {'for': {'if' : 'while'}} would check for a 'for loop'
  *         containing an 'if' statement that contains a 'while' loop. See the
- *         unit tests for more examples.
+ *         unit tests for more examples. 'if' would check if there is an
+ *         'if' statement and is equivalent to doing shouldHave(code, 'if').
  * @return {boolean} Whether the provided code conforms to the desired
  *     structure.
+ * TODO: expand so you can use arrays to select siblings, e.g.
+ * {'for': ['if', 'else']}
  */
-function structureShouldBeLike() {
+function shouldBeLike() {
     throw new Error('Not implemented yet');
 }
