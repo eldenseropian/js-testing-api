@@ -10,7 +10,8 @@
  * @return {boolean} Whether the provided code has the desired functionality.
  */
 function shouldHave(code, whitelist) {
-    throw new Error('Not implemented yet');
+    acorn.parse(code);
+    // throw new Error('Not implemented yet');
 }
 
 /**
@@ -24,7 +25,7 @@ function shouldHave(code, whitelist) {
  *     blacklisted functionalities.
  */
 function shouldNotHave(code, blacklist) {
-    throw new Error('Not implemented yet');
+    acorn.parse(code);
 }
 
 /**
@@ -47,6 +48,6 @@ function shouldNotHave(code, blacklist) {
  * TODO: expand so you can use arrays to select siblings, e.g.
  * {'for': ['if', 'else']}
  */
-function shouldBeLike() {
-    throw new Error('Not implemented yet');
+function shouldBeLike(code, structure) {
+    acorn.parse(code)
 }
