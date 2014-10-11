@@ -45,9 +45,9 @@ QUnit.test('multiple whitelist items', function(assert) {
     assert.equal(shouldHave(FOR_LOOP, ['if', 'else']), false);
 });
 
-// /*******************/
-// /* BLACKLIST TESTS */
-// /*******************/
+/*******************/
+/* BLACKLIST TESTS */
+/*******************/
 
 QUnit.test('empty blacklist', function(assert) {
     programs.forEach(function(program) {
@@ -93,4 +93,5 @@ QUnit.test('nested structure', function(assert) {
     assert.ok(shouldBeLike(FUNCTION, {'function': 'if'}));
     assert.ok(shouldBeLike(FUNCTION_WITH_ARGS, {'function': 'return'}));
     assert.equal(shouldBeLike(IF_ELSE, {'if': 'else'}), false);
+    assert.equal(shouldBeLike(IF_ELSE, {'function': 'else'}), false);
 });

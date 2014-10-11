@@ -1,10 +1,11 @@
 var TRANSLATIONS = {
     'for': 'ForStatement',
+    'while': 'WhileStatement',
     'if': 'IfStatement',
     'break': 'BreakStatement',
     'continue': 'ContinueStatement',
     'return': 'ReturnStatement',
-    'function': 'FunctionDeclaration'
+    'function': ['FunctionDeclaration', 'FunctionExpression']
 };
 
 /**
@@ -28,40 +29,51 @@ function shorthandToOfficialName(shorthand) {
  * 'Else's have to be handled differently because they're not their own
  * statement, but a property of an IfStatement.
  * @param  {Node} AST The AST to search for an else statement.
- * @return {Boolean} Whether the AST contains an else statement.
+ * @param {Number?} start The offset to start looking for the else.
+ * @return {Node} The else node, or undefined if the tree does not have one.
  */
-function hasElse(AST) {
-    return acorn.walk.findNodeAt(AST, null, null, function(nodeType, node) {
+function findElse(AST, start) {
+    console.log('finding else', AST, start);
+    var s = start || null;
+    var e = start || null;
+    return acorn.walk.findNodeAfter(AST, s, function(nodeType, node) {
         return (nodeType === 'IfStatement' && node.alternate !== null);
-    }) !== undefined;
+    });
 }
 
 /**
  * Returns shouldHave if shouldHave is true, otherwise performs shouldNotHave
  * (see their docs for more details).
- * @param  {String} code The code to check.
+ * @param  {String|Node} code The code to check.
  * @param  {Array.<String>} list The elements to check code for.
  * @param  {Boolean} shouldHave Whether list is a whitelist or blacklist.
  * @return {Boolean} Whether code conforms to list.
  */
-function checkList(code, list, shouldHave) {
-    var AST = acorn.parse(code);
+function checkList(code, list, shouldHave, start) {
+    console.log('checking list', code, list, shouldHave, start);
+    var s = start || null;
+
+    var AST = code;
+    if (typeof code === 'string') {
+        AST = acorn.parse(code);
+    }
 
     for (var i = 0; i < list.length; i++) {
         var eltToFind = shorthandToOfficialName(list[i]);
+        var foundElt = undefined;
         if (eltToFind === 'else') {
-            var foundElse = hasElse(AST);
-            if (foundElse && !shouldHave || !foundElse && shouldHave) {
-                return false;
-            }
+            foundElt = findElse(AST, s);
+        } else if (eltToFind instanceof Array) {
+            foundElt = acorn.walk.findNodeAfter(AST, s, function(nodeType) {
+                return eltToFind.indexOf(nodeType) !== -1;
+            });
         } else {
-            var foundElt = acorn.walk.findNodeAt(AST, null, null, eltToFind);
-            if (foundElt && !shouldHave || !foundElt && shouldHave) {
-                return false;
-            }
+            foundElt = acorn.walk.findNodeAfter(AST, s, eltToFind);
+        }
+        if (foundElt && !shouldHave || !foundElt && shouldHave) {
+            return false;
         }
     }
-        
     return true;
 }
 
@@ -71,27 +83,27 @@ function checkList(code, list, shouldHave) {
  *     'variable declaration'."
  * Only checks for the presence/absence of constructs; does not check for
  *     count (e.g. can't say "This program MUST use 2 'for loop's").
- * @param {String} code The code to check.
+ * @param {String|Node} code The code to check.
  * @param {Array.<String>} whitelist The constructs that must be present in the
  *     code. Constructs must be valid JavaScript reserved words.
  * @return {boolean} Whether the provided code has the desired functionality.
  */
-function shouldHave(code, whitelist) {
-    return checkList(code, whitelist, true);
+function shouldHave(code, whitelist, start) {
+    return checkList(code, whitelist, true, start);
 }
 
 /**
  * Check whether code does not contain blacklisted functionality.
  * For example, the ability to say "This program MUST NOT use a 'while loop' or
  *     an 'if statement'."
- * @param {String} code The code to check.
+ * @param {String|Node} code The code to check.
  * @param {Array.<String>} blacklist The constructs that must not be present in
  *     the code. Constructs must be valid JavaScript reserved words.
  * @return {boolean} Whether the provided code does not contain any of the
  *     blacklisted functionalities.
  */
-function shouldNotHave(code, blacklist) {
-    return checkList(code, blacklist, false);
+function shouldNotHave(code, blacklist, start) {
+    return checkList(code, blacklist, false, start);
 }
 
 /**
@@ -115,5 +127,40 @@ function shouldNotHave(code, blacklist) {
  * {'for': ['if', 'else']}
  */
 function shouldBeLike(code, structure) {
-    acorn.parse(code)
+    console.log("DOING", code, structure);
+    var AST = acorn.parse(code);
+    return shouldBeLikeHelper(AST, structure, null, null);
+}
+
+function shouldBeLikeHelper(AST, structure, start) {
+    console.log('starting with', AST, structure, start);
+    if (typeof structure === 'string') {
+        return shouldHave(AST, [structure], start);
+    }
+
+    if (Object.keys(structure).length === 0) {
+        return true;
+    }
+
+    var topElt = Object.keys(structure)[0];
+    var eltToFind = shorthandToOfficialName(topElt);
+    var topEltNode = undefined;
+
+    if (eltToFind === 'else') {
+        topEltNode = findElse(AST, start);
+    } else if (eltToFind instanceof Array) {
+        topEltNode = acorn.walk.findNodeAfter(AST, start, function(nodeType) {
+            return eltToFind.indexOf(nodeType) !== -1;
+        });
+    } else {
+        topEltNode = acorn.walk.findNodeAfter(AST, start, eltToFind);
+    }
+
+    if (topEltNode === undefined) {
+        return false;
+    }
+
+    var restElts = structure[topElt];
+    console.log(topEltNode);
+    return shouldBeLikeHelper(AST, restElts, topEltNode.node.start + 1);
 }
