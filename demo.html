@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <script src="resources/angular.js"></script>
+        <script src="resources/acorn.js"></script>
+        <script src="resources/angular.js"></script>
+        <script src="api.js"></script>
+
+        <title>Demo</title>
+    </head>
+
+    <body ng-app="">
+        <div>
+            <span>Whitelist:</span>
+            <input ng-model="whitelist"></input>
+        <div>
+        <div>
+            <span>Blacklist:</span>
+            <input ng-model="blacklist"></input>
+        <div>
+        <div>
+            <span>Structure:</span>
+            <input ng-model="structure"></input>
+        <div>
+        <textarea rows="40" cols="100"></textarea>
+        <div>Whitelist: {{whitelist}}</div>
+        <div>Blacklist: {{blacklist}}</div>
+        <div>Structure: {{structure}}</div>
+        <div>Whitelist results: {{checker.shouldHave(whitelist)}}</div>
+    </body>
+</html>
