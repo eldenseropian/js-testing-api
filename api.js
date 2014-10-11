@@ -6,6 +6,8 @@ var TRANSLATIONS = {
     'continue': 'ContinueStatement',
     'return': 'ReturnStatement',
     'function': ['FunctionDeclaration', 'FunctionExpression']
+    // function x() --> FunctionDeclaration
+    // var x = function() --> FunctionExpression
 };
 
 /**
@@ -26,31 +28,42 @@ function shorthandToOfficialName(shorthand) {
 }
 
 /**
- * 'Else's have to be handled differently because they're not their own
- * statement, but a property of an IfStatement.
- * @param  {Node} AST The AST to search for an else statement.
- * @param {Number?} start The offset to start looking for the else.
- * @return {Node} The else node, or undefined if the tree does not have one.
+ * Find an element in the AST.
+ * @param {String|Array.<String>} eltToFind The shorthand or full name of an
+ *     element to find, or a list of equivalent element names.
+ * @param {Node} AST The code to search.
+ * @param {Number?} start  If provided, the location in code to start looking
+ *     for eltToFind.
+ * @return {Node|undefined} The found element, or undefined if it is not found.
  */
-function findElse(AST, start) {
-    console.log('finding else', AST, start);
+function findElt(eltToFind, AST, start) {
     var s = start || null;
-    var e = start || null;
-    return acorn.walk.findNodeAfter(AST, s, function(nodeType, node) {
-        return (nodeType === 'IfStatement' && node.alternate !== null);
-    });
+
+    var foundElt = undefined;
+    if (eltToFind === 'else') {
+        foundElt = acorn.walk.findNodeAfter(AST, s, function(nodeType, node) {
+            return (nodeType === 'IfStatement' && node.alternate !== null);
+        });
+    } else if (eltToFind instanceof Array) {
+        foundElt = acorn.walk.findNodeAfter(AST, s, function(nodeType) {
+            return eltToFind.indexOf(nodeType) !== -1;
+        });
+    } else {
+        foundElt = acorn.walk.findNodeAfter(AST, s, eltToFind);
+    }
+    return foundElt;
 }
 
-/**
- * Returns shouldHave if shouldHave is true, otherwise performs shouldNotHave
- * (see their docs for more details).
+ /**
+ * Returns the result of calling shouldHave if the flag shouldHave is true,
+ * otherwise returns the result of shouldNotHave. See their docs for more
+ *     details.
  * @param  {String|Node} code The code to check.
  * @param  {Array.<String>} list The elements to check code for.
  * @param  {Boolean} shouldHave Whether list is a whitelist or blacklist.
  * @return {Boolean} Whether code conforms to list.
  */
 function checkList(code, list, shouldHave, start) {
-    console.log('checking list', code, list, shouldHave, start);
     var s = start || null;
 
     var AST = code;
@@ -60,16 +73,7 @@ function checkList(code, list, shouldHave, start) {
 
     for (var i = 0; i < list.length; i++) {
         var eltToFind = shorthandToOfficialName(list[i]);
-        var foundElt = undefined;
-        if (eltToFind === 'else') {
-            foundElt = findElse(AST, s);
-        } else if (eltToFind instanceof Array) {
-            foundElt = acorn.walk.findNodeAfter(AST, s, function(nodeType) {
-                return eltToFind.indexOf(nodeType) !== -1;
-            });
-        } else {
-            foundElt = acorn.walk.findNodeAfter(AST, s, eltToFind);
-        }
+        var foundElt = findElt(eltToFind, AST, s);
         if (foundElt && !shouldHave || !foundElt && shouldHave) {
             return false;
         }
@@ -86,10 +90,13 @@ function checkList(code, list, shouldHave, start) {
  * @param {String|Node} code The code to check.
  * @param {Array.<String>} whitelist The constructs that must be present in the
  *     code. Constructs must be valid JavaScript reserved words.
+ * @param {Number?} start If provided, the location in code to start looking
+ *     for blacklisted functionalities.
  * @return {boolean} Whether the provided code has the desired functionality.
  */
 function shouldHave(code, whitelist, start) {
-    return checkList(code, whitelist, true, start);
+    var s = start || null;
+    return checkList(code, whitelist, true, s);
 }
 
 /**
@@ -99,11 +106,14 @@ function shouldHave(code, whitelist, start) {
  * @param {String|Node} code The code to check.
  * @param {Array.<String>} blacklist The constructs that must not be present in
  *     the code. Constructs must be valid JavaScript reserved words.
+ * @param {Number?} start If provided, the location in code to start looking
+ *     for blacklisted functionalities.
  * @return {boolean} Whether the provided code does not contain any of the
  *     blacklisted functionalities.
  */
 function shouldNotHave(code, blacklist, start) {
-    return checkList(code, blacklist, false, start);
+    var s = start || null;
+    return checkList(code, blacklist, false, s);
 }
 
 /**
@@ -114,7 +124,7 @@ function shouldNotHave(code, blacklist, start) {
  *     not check distance between desired structures (i.e. supports
  *     is-ancestor-of but not is-parent-of).
  * @param {String} code The code to check.
- * @param {Object|String} structure An object represented the desired structure.
+ * @param {Object|String} structure The structure to find in code.
  *     Example: {'for': 'if'} checks if there is a 'for loop' that has an
  *         'if' statement somewhere inside it, possible within another
  *         construct. {'for': {'if' : 'while'}} would check for a 'for loop'
@@ -124,43 +134,39 @@ function shouldNotHave(code, blacklist, start) {
  * @return {boolean} Whether the provided code conforms to the desired
  *     structure.
  * TODO: expand so you can use arrays to select siblings, e.g.
- * {'for': ['if', 'else']}
+ *     {'for': ['if', 'else']}
  */
 function shouldBeLike(code, structure) {
-    console.log("DOING", code, structure);
     var AST = acorn.parse(code);
-    return shouldBeLikeHelper(AST, structure, null, null);
+    return shouldBeLikeHelper(AST, structure, null);
 }
 
+/**
+ * Recursive implementation of shouldBeLike.
+ * @param {Node} AST The code to check.
+ * @param {Object|String} structure The structure to find in AST.
+ * @param {Number?} start The location in AST to start looking for structures.
+ * @return {Boolean} Whether the AST conforms to structure.
+ */
 function shouldBeLikeHelper(AST, structure, start) {
-    console.log('starting with', AST, structure, start);
+    var s = start || null;
+
     if (typeof structure === 'string') {
-        return shouldHave(AST, [structure], start);
+        return shouldHave(AST, [structure], s);
     }
 
+    // Any code matches a structure with no constraints
     if (Object.keys(structure).length === 0) {
         return true;
     }
 
-    var topElt = Object.keys(structure)[0];
-    var eltToFind = shorthandToOfficialName(topElt);
-    var topEltNode = undefined;
-
-    if (eltToFind === 'else') {
-        topEltNode = findElse(AST, start);
-    } else if (eltToFind instanceof Array) {
-        topEltNode = acorn.walk.findNodeAfter(AST, start, function(nodeType) {
-            return eltToFind.indexOf(nodeType) !== -1;
-        });
-    } else {
-        topEltNode = acorn.walk.findNodeAfter(AST, start, eltToFind);
-    }
-
-    if (topEltNode === undefined) {
+    var shorthandOfEltToFind = Object.keys(structure)[0];
+    var eltToFind = shorthandToOfficialName(shorthandOfEltToFind);
+    var foundNode = findElt(eltToFind, AST, s);
+    if (foundNode === undefined) {
         return false;
     }
 
-    var restElts = structure[topElt];
-    console.log(topEltNode);
-    return shouldBeLikeHelper(AST, restElts, topEltNode.node.start + 1);
+    return shouldBeLikeHelper(AST, structure[shorthandOfEltToFind],
+        foundNode.node.start + 1);
 }
