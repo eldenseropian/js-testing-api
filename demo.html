@@ -2,29 +2,53 @@
     <head>
         <script src="resources/angular.js"></script>
         <script src="resources/acorn.js"></script>
-        <script src="resources/angular.js"></script>
+        <script src="resources/walk.js"></script>
         <script src="api.js"></script>
+        <script type="text/javascript">
+            function ctrl($scope) {
+                $scope.code = '';
+                $scope.whitelist = [];
+                $scope.blacklist = [];
+                $scope.structure = '{}';
+                $scope.check = function() {
+                    try {
+                        if (!checker.shouldHave($scope.code, $scope.whitelist)) {
+                            return false;
+                        }
 
+                        if (!checker.shouldNotHave($scope.code, $scope.blacklist)) {
+                            return false;
+                        }
+
+                        if (!checker.shouldBeLike($scope.code, JSON.parse($scope.structure))) {
+                            return false;
+                        }
+
+                        return true;
+                    } catch (e) {
+                        console.log(e);
+                        return ':(';
+                    }
+                }
+            }
+        </script>
         <title>Demo</title>
     </head>
 
-    <body ng-app="">
+    <body ng-app="" ng-controller="ctrl">
         <div>
             <span>Whitelist:</span>
-            <input ng-model="whitelist"></input>
+            <input ng-list ng-model="whitelist"></input>
         <div>
         <div>
             <span>Blacklist:</span>
-            <input ng-model="blacklist"></input>
+            <input ng-list ng-model="blacklist"></input>
         <div>
         <div>
             <span>Structure:</span>
             <input ng-model="structure"></input>
         <div>
-        <textarea rows="40" cols="100"></textarea>
-        <div>Whitelist: {{whitelist}}</div>
-        <div>Blacklist: {{blacklist}}</div>
-        <div>Structure: {{structure}}</div>
-        <div>Whitelist results: {{checker.shouldHave(whitelist)}}</div>
+        <textarea rows="20" cols="100" ng-model="code"></textarea>
+        <div>{{check()}}</div>
     </body>
 </html>
