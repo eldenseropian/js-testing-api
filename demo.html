@@ -4,38 +4,14 @@
         <script src="resources/acorn.js"></script>
         <script src="resources/walk.js"></script>
         <script src="api.js"></script>
-        <script type="text/javascript">
-            function ctrl($scope) {
-                $scope.code = '';
-                $scope.whitelist = [];
-                $scope.blacklist = [];
-                $scope.structure = '{}';
-                $scope.check = function() {
-                    try {
-                        if (!checker.shouldHave($scope.code, $scope.whitelist)) {
-                            return false;
-                        }
+        <script src="demo.js"></script>
 
-                        if (!checker.shouldNotHave($scope.code, $scope.blacklist)) {
-                            return false;
-                        }
-
-                        if (!checker.shouldBeLike($scope.code, JSON.parse($scope.structure))) {
-                            return false;
-                        }
-
-                        return true;
-                    } catch (e) {
-                        console.log(e);
-                        return ':(';
-                    }
-                }
-            }
-        </script>
+        <link rel="stylesheet" type="text/css" href="demo.css"></link>
+        
         <title>Demo</title>
     </head>
 
-    <body ng-app="" ng-controller="ctrl">
+    <body ng-app="" ng-controller="ctrl" id="ng-app">
         <div>
             <span>Whitelist:</span>
             <input ng-list ng-model="whitelist"></input>
@@ -48,7 +24,9 @@
             <span>Structure:</span>
             <input ng-model="structure"></input>
         <div>
-        <textarea rows="20" cols="100" ng-model="code"></textarea>
-        <div>{{check()}}</div>
+        <textarea id="code-editor" rows="20" cols="100" ng-model="code"></textarea>
+        <div id="error-container">Errors:
+            <div class="error-message" ng-repeat="item in check()">- {{item}}</div>
+        </div>
     </body>
 </html>
