@@ -93,6 +93,7 @@ var checker = (function() {
      *     code. Constructs must be valid JavaScript reserved words.
      * @param {Number?} start If provided, the location in code to start looking
      *     for blacklisted functionalities.
+     * @throws {SyntaxError} If code is not syntatically valid.
      * @return {boolean} Whether the provided code has the desired functionality.
      */
     function shouldHave(code, whitelist, start) {
@@ -109,6 +110,7 @@ var checker = (function() {
      *     the code. Constructs must be valid JavaScript reserved words.
      * @param {Number?} start If provided, the location in code to start looking
      *     for blacklisted functionalities.
+     * @throws {SyntaxError} If code is not syntatically valid.
      * @return {boolean} Whether the provided code does not contain any of the
      *     blacklisted functionalities.
      */
@@ -132,6 +134,7 @@ var checker = (function() {
      *         containing an 'if' statement that contains a 'while' loop. See the
      *         unit tests for more examples. 'if' would check if there is an
      *         'if' statement and is equivalent to doing shouldHave(code, 'if').
+     * @throws {SyntaxError} If code is not syntatically valid.
      * @return {boolean} Whether the provided code conforms to the desired
      *     structure.
      * TODO: expand so you can use arrays to select siblings, e.g.

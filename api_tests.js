@@ -9,6 +9,7 @@ var WHILE_LOOP = 'var x = 0;\nwhile(x < 5) {\nfor(var i = 0; i < 2; i++) ' +
 var x = 0;
 var FUNCTION = 'var y = function() {\n' + IF_ELSE + '\n}';
 var FUNCTION_WITH_ARGS = 'function myFunc(y, z) {\n\treturn y + z;\n}';
+var INVALID_CODE = 'for(var i';
 
 var programs = [
     EMPTY_CODE,
@@ -37,6 +38,9 @@ QUnit.test('single whitelist item', function(assert) {
     assert.ok(checker.shouldHave(IF_ELSE, ['if']));
     assert.ok(checker.shouldHave(IF_ELSE, ['else']));
     assert.equal(checker.shouldHave(FOR_LOOP, ['if']), false);
+    assert.throws(function() {
+        checker.shouldHave(INVALID_CODE, ['if']);
+    });
 });
 
 QUnit.test('multiple whitelist items', function(assert) {
@@ -44,6 +48,9 @@ QUnit.test('multiple whitelist items', function(assert) {
     assert.ok(checker.shouldHave(FUNCTION_WITH_ARGS, ['function', 'return']));
     assert.equal(checker.shouldHave(IF, ['if', 'else']), false);
     assert.equal(checker.shouldHave(FOR_LOOP, ['if', 'else']), false);
+    assert.throws(function() {
+        checker.shouldHave(INVALID_CODE, ['if', 'else']);
+    });
 });
 
 /*******************/
@@ -61,6 +68,9 @@ QUnit.test('single blacklist item', function(assert) {
     assert.equal(checker.shouldNotHave(IF_ELSE, ['if']), false);
     assert.equal(checker.shouldNotHave(IF_ELSE, ['else']), false);
     assert.ok(checker.shouldNotHave(FOR_LOOP, ['if']));
+    assert.throws(function() {
+        checker.shouldNotHave(INVALID_CODE, ['if']);
+    });
 });
 
 QUnit.test('multiple blacklist items', function(assert) {
@@ -71,6 +81,9 @@ QUnit.test('multiple blacklist items', function(assert) {
         ['function', 'return']), false);
     assert.equal(checker.shouldNotHave(IF, ['if', 'else']), false);
     assert.ok(checker.shouldNotHave(FOR_LOOP, ['if', 'else']));
+    assert.throws(function() {
+        checker.shouldNotHave(INVALID_CODE, ['if', 'else']);
+    });
 });
 
 /*******************/
@@ -88,7 +101,11 @@ QUnit.test('single layer structure', function(assert) {
     assert.ok(checker.shouldBeLike(IF_ELSE, 'if'));
     assert.ok(checker.shouldBeLike(IF_ELSE, 'else'));
     assert.equal(checker.shouldBeLike(FOR_LOOP, 'if'), false);
+    assert.throws(function() {
+        checker.shouldBeLike(INVALID_CODE, 'if');
+    });
 });
+
 
 QUnit.test('nested structure', function(assert) {
     assert.ok(checker.shouldBeLike(WHILE_LOOP,
@@ -97,4 +114,7 @@ QUnit.test('nested structure', function(assert) {
     assert.ok(checker.shouldBeLike(FUNCTION_WITH_ARGS, {'function': 'return'}));
     assert.equal(checker.shouldBeLike(IF_ELSE, {'if': 'else'}), false);
     assert.equal(checker.shouldBeLike(IF_ELSE, {'function': 'else'}), false);
+    assert.throws(function() {
+        checker.shouldBeLike(INVALID_CODE, {'function': 'else'});
+    });
 });
