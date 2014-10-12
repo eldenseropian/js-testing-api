@@ -12,21 +12,32 @@
     </head>
 
     <body ng-app="" ng-controller="ctrl" id="ng-app">
+        <h1 class="center">js-testing-api demo page</h1>
+        <h3 class="center">
+            <a href="http://github.com/lilyseropian/js-testing-api">
+                github.com/lilyseropian/js-testing-api
+            </a>
+        </h3>
+
+        <p>This page can be used to live test the "checker" testing API provided in api.js. The Whitelist and Blacklist input boxes both take comma-separated lists or a single word. The Structure input box takes a valid JSON object or a single word. See the documentation in api.js for more details.</p>
+
         <div>
-            <span>Whitelist:</span>
+            <span class="label">Whitelist:</span>
             <input ng-list ng-model="whitelist"></input>
+        </div>
         <div>
-        <div>
-            <span>Blacklist:</span>
+            <span class="label">Blacklist:</span>
             <input ng-list ng-model="blacklist"></input>
+        </div>
         <div>
-        <div>
-            <span>Structure:</span>
+            <span class="label">Structure:</span>
             <input ng-model="structure"></input>
-        <div>
-        <textarea id="code-editor" rows="20" cols="100" ng-model="code"></textarea>
+        </div>
+
         <div id="error-container">Errors:
             <div class="error-message" ng-repeat="item in check()">- {{item}}</div>
         </div>
+
+        <textarea id="code-editor" rows="20" cols="100" ng-model="code"></textarea>
     </body>
 </html>

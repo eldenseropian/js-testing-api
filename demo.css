@@ -6,7 +6,25 @@
     margin-top: 1em;
 }
 
+.center {
+    text-align: center;
+}
+
 .error-message {
     color: red;
     margin-left: 1em;
+}
+
+.label {
+    display: inline-block;
+    width: 5em;
+}
+
+body {
+    font-family: sans-serif;
+    padding: 5em;
+}
+
+input {
+    width: 50em;
 }

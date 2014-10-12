@@ -1,9 +1,12 @@
 function ctrl($scope) {
-    $scope.code = '';
-    $scope.whitelist = [];
-    $scope.blacklist = [];
-    $scope.structure = '{}';
+    $scope.code = 'var x = 0;\nif(x > 0) {\n\talert("Hello!");\n} else {\n\talert("World.");\n}';
+
+    $scope.whitelist = ['for', 'if'];
+    $scope.blacklist = ['else'];
+    $scope.structure = '{"function": {"for": "if"}}';
+
     $scope.error = '';
+    
     $scope.check = function() {
         var errors = [];
         var structure;
