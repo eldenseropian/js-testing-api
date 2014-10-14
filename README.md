@@ -4,7 +4,7 @@ js-testing-api
 Interview coding challenge.
 
 Demo [here](http://seropian.scripts.mit.edu/js-testing-api/demo.html).
-Tests [here](http://seropian.scripts.mit.edu/js-testing-api/api_tests.html)
+Tests [here](http://seropian.scripts.mit.edu/js-testing-api/api_tests.html).
 
 ### Acorn vs. Esprima
 
