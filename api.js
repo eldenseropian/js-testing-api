@@ -1,5 +1,6 @@
 var checker = (function() {
     var TRANSLATIONS = {
+        'var': 'VariableDeclaration',
         'for': 'ForStatement',
         'while': 'WhileStatement',
         'if': 'IfStatement',
