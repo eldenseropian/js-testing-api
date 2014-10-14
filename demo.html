@@ -40,7 +40,10 @@
         </div>
 
         <div id="error-container">Errors:
-            <div class="error-message" ng-repeat="item in check()">- {{item}}</div>
+            <div class="error-message" ng-repeat="item in check()">
+                <span>- </span>
+                <span ng-bind="item"></span>
+            </div>
         </div>
     </body>
 </html>
